@@ -1,0 +1,98 @@
+                           VPC changes to support PaaS in JCS
+                           ----------------------------------
+
+Background: PaaS like RDS, Big Data etc use VM(s) to host applications for their
+offerings. These VM(s) are owned by PaaS admin accounts and they will have
+ethernet interface with IP address belonging to VPC of PaaS admin account.
+Customer VM(s) access their PaaS service end-points via floating-ip attached
+to their PaaS VM(s).
+
+Requirements:
+1) Place the PaaS account-owned VM into a customer specified (and owned) VPC. All
+VPC properties (current and future) should apply to the DB Instance.
+2) Allow communication between PaaS Control Plane and the Guest Agent running on the
+VM i.e. the customer should not be able to block this communication.
+
+Design Approach:
+All considered approaches are described in below document-
+https://docs.google.com/document/d/1k47i3vrq6taCrPGeiyPdqDEukYs0fg8pK2b-hPJtWiA/edit
+
+Final approach is to have two interfaces on PaaS VM (owned by PaaS admin), one
+interface in Cu VPC and another one in PaaS VPC.
+
+Scope of Changes: 
+VPC service provides port resource to Compute service for booting a VM in
+specified VPC. Customer of VPC service can create/modify a port resource from his owned
+VPC. To support above design approach VPC service should allow special accounts
+(PaaS admins) to be able to create/modify/list ports in any customer VPC.
+
+Scope of changes is limited to REST API of VPC services doing CRUD operations on
+port resource. 
+
+Functionality: To allow PaaS admin accounts only to create port in any customer
+VPC(s), VPC service should be aware of PaaS admin account. There are two
+approaches to do this 
+a) IAM returns a flag when we approach IAM with token-auth which indocates it is
+a PaaS account and hence allowed to create port in someone else's VPC.
+b) PaaS teams informs VPC team about their account-ids which will be used for
+creating port in cu's VPC and we store it in VPC db.
+
+Since, PaaS admin accounts are mostly fixed and do not change very
+dynamically, option a) seems an overkill.
+
+Neutron Port API changes:
+a) Create port: There are no change in request or response parameter of this API.
+Changes are restricted only to allow cross-account access. Following is JSON 
+request for creating a port in a VPC
+{
+    "port": {
+        "network_id": "UUID of VPC in account x",
+        "name": "abc",
+        "admin_state_up": true
+    }
+}
+This request is sent to neutron with customer's token. As of now, account-id of
+token and account-id of VPC should be same. We will extend this functionality to
+support token of PaaS account can be passed along with VPC of any account.
+
+b)List ports: There are no change in request or response parameter of this API.
+Changes are restricted only to list ports create by PaaS admin accounts in
+customer's VPC apart from ports owned by them in PaaS VPC. List port is called as
+following
+GET /v2.0/ports/{port_id}
+
+When this request will be called with PaaS admin account, we will return ports
+created by PaaS admin in all the VPC (including their own VPC)
+
+When port_id is specified and PaaS admin's token is passed then VPC will return 
+details of port even if port does not belong to VPC to PaaS admin.
+
+c) Update port: There are no change in request or response parameter of this API.
+Changes are restricted only to allow PaaS admin to update port even if port is not
+part of PaaS VPC. Update port is called as
+POST /v2.0/ports/{port_id}
+
+When this request is called with PaaS admin token, VPC service will check if this 
+port has been create by same PaaS admin account. If yes, modification would be 
+allowed.
+
+d) Delete port: There are no change in request or response parameter of this API.
+Changes are restricted only to allow PaaS admin to delete port create by them 
+earlier. Delete port is called as
+DELETE /v2.0/ports/{port_id}
+
+When this request is called with PaaS admin token, VPC service will check if this
+port was created by same PaaS admin account. If yes, port will be delete and IP
+address would be returned in customer's VPC.
+
+Data-path Changes:
+There are no changes needed on vrouter/agent on CP nodes.
+
+--
+
+
+
+
+
+
+
