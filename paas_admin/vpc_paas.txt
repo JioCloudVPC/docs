@@ -1,5 +1,5 @@
                            VPC changes to support PaaS in JCS
-                           ----------------------------------
+                         --------------------------------------
 
 Background: PaaS like RDS, Big Data etc use VM(s) to host applications for their
 offerings. These VM(s) are owned by PaaS admin accounts and they will have
@@ -26,36 +26,36 @@ specified VPC. Customer of VPC service can create/modify a port resource from hi
 VPC. To support above design approach VPC service should allow special accounts
 (PaaS admins) to be able to create/modify/list ports in any customer VPC.
 
-Scope of changes is limited to REST API of VPC services doing CRUD operations on
+Scope of changes are limited to REST API of VPC services doing CRUD operations on
 port resource. 
 
 Functionality: To allow PaaS admin accounts only to create port in any customer
 VPC(s), VPC service should be aware of PaaS admin account. There are two
 approaches to do this 
-a) IAM returns a flag when we approach IAM with token-auth which indocates it is
+a) IAM returns a flag when we approach IAM with token-auth which indicates it is
 a PaaS account and hence allowed to create port in someone else's VPC.
-b) PaaS teams informs VPC team about their account-ids which will be used for
+b) PaaS teams inform VPC team about their account-ids which will be used for
 creating port in cu's VPC and we store it in VPC db.
 
 Since, PaaS admin accounts are mostly fixed and do not change very
 dynamically, option a) seems an overkill.
 
 Neutron Port API changes:
-a) Create port: There are no change in request or response parameter of this API.
+a) Create port: There are no changes in request or response parameter of this API.
 Changes are restricted only to allow cross-account access. Following is JSON 
 request for creating a port in a VPC
 {
     "port": {
-        "network_id": "UUID of VPC in account x",
+        "network_id": "UUID of VPC in cu account" ,
         "name": "abc",
         "admin_state_up": true
     }
 }
-This request is sent to neutron with customer's token. As of now, account-id of
+As of now, This request is sent to neutron with customer's token so account-id of
 token and account-id of VPC should be same. We will extend this functionality to
 support token of PaaS account can be passed along with VPC of any account.
 
-b)List ports: There are no change in request or response parameter of this API.
+b)List ports: There are no changes in request or response parameter of this API.
 Changes are restricted only to list ports create by PaaS admin accounts in
 customer's VPC apart from ports owned by them in PaaS VPC. List port is called as
 following
