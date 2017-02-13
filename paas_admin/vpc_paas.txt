@@ -44,7 +44,7 @@ Restrictions: PaaS accounts should choose CIDR for their VPC in reserved range a
 below. This CIDR would not be allowed in customers's VPC. This restriction is 
 to avoid having two ports on PaaS VM in same subnet.
 
-Reserved Range - 21.x.0.0/16.
+Reserved Range - 10.2xx.0.0/16.
 
 This CIDR would not be allowed for customer VPC
 
