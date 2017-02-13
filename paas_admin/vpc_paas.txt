@@ -38,7 +38,15 @@ b) PaaS teams inform VPC team about their account-ids which will be used for
 creating port in cu's VPC and we store it in VPC db.
 
 Since, PaaS admin accounts are mostly fixed and do not change very
-dynamically, option a) seems an overkill.
+dynamically, option a) seems an overkill. 
+
+Restrictions: PaaS accounts should choose CIDR for their VPC in reserved range as
+below. This CIDR would not be allowed in customers's VPC. This restriction is 
+to avoid having two ports on PaaS VM in same subnet.
+
+Reserved Range - 21.x.0.0/16.
+
+This CIDR would not be allowed for customer VPC
 
 Neutron Port API changes:
 a) Create port: There are no changes in request or response parameter of this API.
