@@ -99,7 +99,9 @@ There are no changes needed on vrouter/agent on CP nodes.
 --
 
 
-
+# API for Creating PAAS account:
+  - Action: CreatePaasAccount
+  - Resources: account-id ex. acc-<32 byte account id>
 
 
 
