@@ -32,13 +32,10 @@ port resource.
 Functionality: To allow PaaS admin accounts only to create port in any customer
 VPC(s), VPC service should be aware of PaaS admin account. There are two
 approaches to do this 
-a) IAM returns a flag when we approach IAM with token-auth which indicates it is
-a PaaS account and hence allowed to create port in someone else's VPC.
+a) IAM returns a flag when we approach IAM with token-auth/ec2-auth which indicates
+it is a PaaS account and hence allowed to create port in someone else's VPC.
 b) PaaS teams inform VPC team about their account-ids which will be used for
 creating port in cu's VPC and we store it in VPC db.
-
-Since, PaaS admin accounts are mostly fixed and do not change very
-dynamically, option a) seems an overkill. 
 
 Restrictions: PaaS accounts should choose CIDR for their VPC in reserved range as
 below. This CIDR would not be allowed in customers's VPC. This restriction is 
@@ -103,6 +100,14 @@ There are no changes needed on vrouter/agent on CP nodes.
   - Action: CreatePaasAccount
   - Resources: account-id ex. acc-<32 byte account id>
 
+IAM Requirements:
+------------------
 
+Some special privileage need to be provided to PaaS accounts in different JCS
+services. One such use-case is described above which is to allow paas account to
+create port in any customer's VPC. Hence we need one flag from IAM in response
+of ec2-auth and token-auth when account-id belongs to thses service/paas
+accounts. IAM can pass one flag "is_pass_account" True or False based on the
+account type in the response.
 
 
