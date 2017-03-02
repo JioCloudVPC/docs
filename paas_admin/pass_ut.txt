@@ -1,0 +1,46 @@
+# EC2 API testing:
+  1. Create PAAS account:
+     - There should be an entry ec2db when created with proper arguments
+     - Should throw error if account is present
+
+  2. Delete Pass:
+     - Remove entry from ec2db
+     - Should throw an error if PAAS accout has any active PNIs
+
+
+# Neutron Testing:
+  1. Create Port:
+     - Should allow cross account port creation.i.e. if network id is in different network and request is from PAAS network
+     - Entry for new PNI should be made in ec2db
+     - Should rollback if ec2 db is inaccessible
+     - IP should be from network of the tenant
+     - IN IFMAP view it should come under tenant's network
+     - Disallow cross port creation if request is not from PAAS network
+
+  2. List port:
+     If queried from PAAS account:
+       - PNI's created should be visible when List port is done.
+       - Result should be accurate if any filter is given
+       - Listing of individual PAAS port should be permitted.
+
+     If queried from customers account:
+       - Should be able to list only pni's of own acount created by single/multiple PAAS account aling with other ports in the network
+       - Quering individual port should be permitted
+
+  3. Update port:
+     If queried from PAAS account:
+       - Updating cross account port(pni) properties should be permitted.
+       - A port creted by a PAAS account could not be updated by other PAAS account
+
+     If queried from customers account:
+       - Should be refrained from updating any port apart from its own.
+
+  4. Delete Port:
+     - Should allow cross account port deletion.i.e. if port is created by same PAAS account
+     - Entry for deleted PNI should be removed in ec2db
+     - Should rollback if ec2 db is inaccessible
+     - Disallow cross port deletion if request is not from PAAS network
+
+  . Misc:
+     - Should not allow any other resources creation/deletion/updation/List apart from port.
+
